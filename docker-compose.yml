@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: mindful_db
+    environment:
+      POSTGRES_USER: mindful_user
+      POSTGRES_PASSWORD: "090078601"
+      POSTGRES_DB: mindful_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready default database is the user name; specify the actual DB so
+      # the healthcheck doesn't probe for a 'mindful_user' database that may
+      # not exist.
+      test: ["CMD-SHELL", "pg_isready -U mindful_user -d mindful_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: mindful_api
+    environment:
+      DATABASE_URL: postgresql://mindful_user:090078601@db:5432/mindful_db
+      SECRET_KEY: your-secret-key-change-in-production
+      DEBUG: "False"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
