@@ -12,6 +12,8 @@ from app.routes import (
     note_routes,
     user_routes,
     analytics_routes,
+    assessment_routes,
+    personal_inspiration_routes,
 )
 
 # Create database tables
@@ -91,6 +93,8 @@ app.include_router(reminder_routes.router)
 app.include_router(note_routes.router)
 app.include_router(user_routes.router)
 app.include_router(analytics_routes.router)
+app.include_router(assessment_routes.router)
+app.include_router(personal_inspiration_routes.router)
 
 
 @app.get("/", tags=["root"])

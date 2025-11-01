@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List, Any
 from datetime import datetime
 
 
@@ -11,6 +11,7 @@ class UserBase(BaseModel):
     motivations: Optional[str] = None
     language: str = "en"
     picture: Optional[str] = None
+    user_goals: Optional[List[Any]] = None
 
 
 class UserCreate(UserBase):
@@ -25,6 +26,7 @@ class UserUpdate(BaseModel):
     motivations: Optional[str] = None
     language: Optional[str] = None
     picture: Optional[str] = None
+    user_goals: Optional[List[Any]] = None
 
 
 class UserResponse(UserBase):
@@ -42,3 +44,14 @@ class UserResponse(UserBase):
 class UserProfileResponse(UserResponse):
     """Extended user profile response."""
     pass
+
+
+class ChangePasswordRequest(BaseModel):
+    """Schema for changing user password."""
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=8)
+    
+    
+class ChangePasswordResponse(BaseModel):
+    """Schema for change password response."""
+    message: str

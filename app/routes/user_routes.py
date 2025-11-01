@@ -1,13 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, verify_password, hash_password
 from app.models.user import User
-from app.schemas.user_schema import UserResponse, UserUpdate, UserProfileResponse
+from app.schemas.user_schema import (
+    UserResponse,
+    UserUpdate,
+    UserProfileResponse,
+    ChangePasswordRequest,
+    ChangePasswordResponse,
+)
 from app.schemas.analytics_schema import ProgressResponse
 from app.services.analytics_service import AnalyticsService
 from datetime import datetime
 from typing import Dict, Any
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/user", tags=["user"])
 
@@ -31,6 +40,7 @@ def update_profile(
     user = current_user
 
     update_data = profile_data.dict(exclude_unset=True)
+    logger.info(f"Updating user {user.id} with data: {update_data}")
     for field, value in update_data.items():
         setattr(user, field, value)
 
@@ -52,3 +62,26 @@ def get_user_profile(user_id: int, db: Session = Depends(get_db)):
         )
     
     return user
+
+
+@router.post("/change-password", response_model=ChangePasswordResponse)
+def change_password(
+    password_data: ChangePasswordRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Change user password."""
+    user = current_user
+    
+    # Verify current password
+    if not verify_password(password_data.current_password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+    
+    # Update password
+    user.password_hash = hash_password(password_data.new_password)
+    db.commit()
+    
+    return ChangePasswordResponse(message="Password changed successfully")

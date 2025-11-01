@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Enum, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Enum, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -19,6 +19,7 @@ class User(Base):
     picture = Column(String(500), nullable=True)
     role = Column(String(20), default="user")  # 'user' or 'admin'
     is_active = Column(Boolean, default=True)
+    user_goals = Column(JSON, nullable=True, default=list)  # List of user goals stored as JSON
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -29,6 +30,8 @@ class User(Base):
     notes = relationship("Note", back_populates="user", cascade="all, delete-orphan")
     reminders = relationship("Reminder", back_populates="user", cascade="all, delete-orphan")
     analytics = relationship("Analytics", back_populates="user", cascade="all, delete-orphan")
+    assessments = relationship("Assessment", back_populates="user", cascade="all, delete-orphan")
+    personal_inspirations = relationship("PersonalInspiration", back_populates="user", cascade="all, delete-orphan")
 
 
 class Habit(Base):
@@ -159,3 +162,33 @@ class Analytics(Base):
     
     # Relationships
     user = relationship("User", back_populates="analytics")
+
+
+class Assessment(Base):
+    """Assessment model for storing user assessment responses."""
+    __tablename__ = "assessments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    assessment_name = Column(String(255), nullable=False)
+    assessment_type = Column(String(100), nullable=False)  # Type of assessment (e.g., personality, wellness, etc.)
+    questions = Column(JSON, nullable=False)  # Format: {"1": "answer1", "2": ["answer2a", "answer2b"], ...}
+    results = Column(JSON, nullable=False)  # Store any JSON structure for results
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="assessments")
+
+
+class PersonalInspiration(Base):
+    """PersonalInspiration model for storing user inspirational quotes/content."""
+    __tablename__ = "personal_inspirations"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    inspiration = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    user = relationship("User", back_populates="personal_inspirations")
