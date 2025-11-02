@@ -2,6 +2,11 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.user import Mood, Habit, Goal, Analytics
+import base64
+import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def calculate_mood_average(moods: List[Mood]) -> Optional[str]:
@@ -77,3 +82,46 @@ def generate_insights(mood_avg: str, habit_rate: float, goal_progress: float) ->
         insights.append("You're in the early stages of your goals. Break them down into smaller milestones.")
     
     return " ".join(insights)
+
+
+def process_base64_image(image_data: Optional[str]) -> Optional[str]:
+    """
+    Process and validate Base64 image data.
+    
+    Args:
+        image_data: Base64 encoded image string, optionally with data URI prefix
+        
+    Returns:
+        Cleaned Base64 string without data URI prefix, or None if invalid
+    """
+    if not image_data:
+        return None
+    
+    try:
+        # Remove data URI prefix if present (e.g., "data:image/png;base64,")
+        if image_data.startswith('data:'):
+            # Extract just the base64 part
+            match = re.match(r'data:image/[^;]+;base64,(.+)', image_data)
+            if match:
+                image_data = match.group(1)
+            else:
+                logger.warning("Invalid data URI format")
+                return None
+        
+        # Remove any whitespace
+        image_data = image_data.strip()
+        
+        # Validate Base64 encoding by attempting to decode
+        try:
+            base64.b64decode(image_data, validate=True)
+        except Exception as e:
+            logger.error(f"Invalid Base64 encoding: {e}")
+            return None
+        
+        # Return the cleaned Base64 string (store with data URI for consistency)
+        # This allows easy display in web/mobile apps
+        return f"data:image/jpeg;base64,{image_data}"
+        
+    except Exception as e:
+        logger.error(f"Error processing Base64 image: {e}")
+        return None

@@ -16,7 +16,7 @@ class User(Base):
     gender = Column(String(50), nullable=True)
     motivations = Column(Text, nullable=True)
     language = Column(String(10), default="en")
-    picture = Column(String(500), nullable=True)
+    picture = Column(Text, nullable=True)  # Store Base64 encoded images
     role = Column(String(20), default="user")  # 'user' or 'admin'
     is_active = Column(Boolean, default=True)
     user_goals = Column(JSON, nullable=True, default=list)  # List of user goals stored as JSON

@@ -46,6 +46,16 @@ class UserProfileResponse(UserResponse):
     pass
 
 
+class ProfileUpdateResponse(BaseModel):
+    """Response for profile update."""
+    success: bool
+    message: str
+    user: UserResponse
+    
+    class Config:
+        from_attributes = True
+
+
 class ChangePasswordRequest(BaseModel):
     """Schema for changing user password."""
     current_password: str = Field(..., min_length=1)
