@@ -26,6 +26,11 @@ services:
       DATABASE_URL: postgresql://mindful_user:090078601@db:5432/mindful_db
       SECRET_KEY: your-secret-key-change-in-production
       DEBUG: "False"
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-314916917003-4s562n3a51bhcpt6sdov0qqkjov4ue71.apps.googleusercontent.com}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_PROJECT_ID: ${GOOGLE_PROJECT_ID:-mindful-475220}
+      ALGORITHM: ${ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
     ports:
       - "8000:8000"
     depends_on:
@@ -33,6 +38,8 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+    env_file:
+      - .env
 
 volumes:
   postgres_data:

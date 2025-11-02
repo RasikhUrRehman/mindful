@@ -12,7 +12,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=True)  # Nullable for OAuth users
     gender = Column(String(50), nullable=True)
     motivations = Column(Text, nullable=True)
     language = Column(String(10), default="en")
@@ -20,6 +20,11 @@ class User(Base):
     role = Column(String(20), default="user")  # 'user' or 'admin'
     is_active = Column(Boolean, default=True)
     user_goals = Column(JSON, nullable=True, default=list)  # List of user goals stored as JSON
+    
+    # OAuth fields
+    oauth_provider = Column(String(50), nullable=True)  # 'google', 'facebook', etc.
+    oauth_id = Column(String(255), nullable=True, unique=True, index=True)  # Provider's user ID
+    
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

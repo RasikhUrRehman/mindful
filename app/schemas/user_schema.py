@@ -16,7 +16,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """Schema for creating a new user."""
-    password: str = Field(..., min_length=8)
+    password: Optional[str] = Field(None, min_length=8)  # Optional for OAuth users
 
 
 class UserUpdate(BaseModel):
