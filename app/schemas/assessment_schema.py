@@ -1,16 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 #   {
 #     "assessment_name": "mindset & psychology",
 #     "assessment_type": "MCQ",
 #     "questions": {
-#       "1": 1,
-#       "2": 1,
-#       "3": 1,
-#       "4": 1,
-#       "5": 1
+#       "1": ["1"],
+#       "2": ["1"],
+#       "3": ["1"],
+#       "4": ["1"],
+#       "5": ["1"]
 #     },
 #     "results": {
 #       "thinking_patterns": {
@@ -31,7 +31,7 @@ class AssessmentBase(BaseModel):
     """Base assessment schema."""
     assessment_name: str = Field(..., min_length=1, max_length=255)
     assessment_type: str = Field(..., min_length=1, max_length=100)
-    questions: Dict[str, Any] = Field(..., description="Questions with answers: {\"1\": \"answer\", \"2\": [\"list\", \"of\", \"answers\"]}")
+    questions: Dict[str, List[str]] = Field(..., description="Questions with answers as list of strings: {\"1\": [\"answer1\"], \"2\": [\"answer2a\", \"answer2b\"]}")
     results: Dict[str, Any] = Field(..., description="Assessment results as JSON")
 
 
@@ -44,7 +44,7 @@ class AssessmentUpdate(BaseModel):
     """Schema for updating an assessment."""
     assessment_name: Optional[str] = Field(None, min_length=1, max_length=255)
     assessment_type: Optional[str] = Field(None, min_length=1, max_length=100)
-    questions: Optional[Dict[str, Any]] = None
+    questions: Optional[Dict[str, List[str]]] = None
     results: Optional[Dict[str, Any]] = None
 
 

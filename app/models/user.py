@@ -177,7 +177,7 @@ class Assessment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     assessment_name = Column(String(255), nullable=False)
     assessment_type = Column(String(100), nullable=False)  # Type of assessment (e.g., personality, wellness, etc.)
-    questions = Column(JSON, nullable=False)  # Format: {"1": "answer1", "2": ["answer2a", "answer2b"], ...}
+    questions = Column(JSON, nullable=False)  # Format: {"1": ["answer1"], "2": ["answer2a", "answer2b"], ...}
     results = Column(JSON, nullable=False)  # Store any JSON structure for results
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
