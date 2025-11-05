@@ -27,6 +27,7 @@ class UserUpdate(BaseModel):
     language: Optional[str] = None
     picture: Optional[str] = None
     user_goals: Optional[List[Any]] = None
+    fcm_token: Optional[str] = None
 
 
 class UserResponse(UserBase):
@@ -64,4 +65,15 @@ class ChangePasswordRequest(BaseModel):
     
 class ChangePasswordResponse(BaseModel):
     """Schema for change password response."""
+    message: str
+
+
+class FCMTokenUpdate(BaseModel):
+    """Schema for updating FCM token."""
+    fcm_token: str = Field(..., min_length=1)
+
+
+class FCMTokenResponse(BaseModel):
+    """Schema for FCM token update response."""
+    success: bool
     message: str

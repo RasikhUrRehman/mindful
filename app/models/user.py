@@ -25,6 +25,9 @@ class User(Base):
     oauth_provider = Column(String(50), nullable=True)  # 'google', 'facebook', etc.
     oauth_id = Column(String(255), nullable=True, unique=True, index=True)  # Provider's user ID
     
+    # FCM (Firebase Cloud Messaging) token for push notifications
+    fcm_token = Column(Text, nullable=True)  # Device FCM token for push notifications
+    
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     

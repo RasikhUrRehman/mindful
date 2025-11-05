@@ -24,9 +24,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
     
     # Google OAuth Configuration
-    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "314916917003-4s562n3a51bhcpt6sdov0qqkjov4ue71.apps.googleusercontent.com")
+    GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
     GOOGLE_PROJECT_ID: str = os.getenv("GOOGLE_PROJECT_ID", "mindful-475220")
+    
+    # Firebase Configuration
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
     
     class Config:
         env_file = ".env"

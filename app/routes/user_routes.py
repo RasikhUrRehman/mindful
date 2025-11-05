@@ -9,6 +9,8 @@ from app.schemas.user_schema import (
     UserProfileResponse,
     ChangePasswordRequest,
     ChangePasswordResponse,
+    FCMTokenUpdate,
+    FCMTokenResponse,
 )
 from app.schemas.analytics_schema import ProgressResponse
 from app.services.analytics_service import AnalyticsService
@@ -109,3 +111,63 @@ def change_password(
     db.commit()
     
     return ChangePasswordResponse(message="Password changed successfully")
+
+
+@router.post("/fcm-token", response_model=FCMTokenResponse)
+def register_fcm_token(
+    token_data: FCMTokenUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Register or update FCM token for push notifications."""
+    try:
+        user = current_user
+        user.fcm_token = token_data.fcm_token
+        user.updated_at = datetime.utcnow()
+        
+        db.commit()
+        db.refresh(user)
+        
+        logger.info(f"FCM token updated for user {user.id}")
+        
+        return FCMTokenResponse(
+            success=True,
+            message="FCM token registered successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error updating FCM token for user {current_user.id}: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to register FCM token"
+        )
+
+
+@router.delete("/fcm-token", response_model=FCMTokenResponse)
+def unregister_fcm_token(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Unregister FCM token (e.g., on logout)."""
+    try:
+        user = current_user
+        user.fcm_token = None
+        user.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        logger.info(f"FCM token removed for user {user.id}")
+        
+        return FCMTokenResponse(
+            success=True,
+            message="FCM token unregistered successfully"
+        )
+        
+    except Exception as e:
+        logger.error(f"Error removing FCM token for user {current_user.id}: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to unregister FCM token"
+        )

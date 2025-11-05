@@ -40,3 +40,7 @@ venv.bak/
 .coverage
 htmlcov/
 *.log
+
+# Firebase credentials - NEVER commit this!
+google-services.json
+*firebase*.json

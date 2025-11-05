@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base
 from app.routes import (
@@ -14,10 +15,37 @@ from app.routes import (
     analytics_routes,
     assessment_routes,
     personal_inspiration_routes,
+    notification_routes,
 )
+from app.services.reminder_scheduler_service import ReminderSchedulerService
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown events."""
+    # Startup
+    logger.info("Starting Mindful Progress API...")
+    try:
+        ReminderSchedulerService.start()
+        logger.info("Reminder scheduler started successfully")
+    except Exception as e:
+        logger.error(f"Failed to start reminder scheduler: {e}")
+    
+    yield
+    
+    # Shutdown
+    logger.info("Shutting down Mindful Progress API...")
+    try:
+        ReminderSchedulerService.stop()
+        logger.info("Reminder scheduler stopped successfully")
+    except Exception as e:
+        logger.error(f"Error stopping reminder scheduler: {e}")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -26,6 +54,7 @@ app = FastAPI(
     description="Backend API for Mindful Progress App",
     docs_url="/docs",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 
@@ -95,6 +124,7 @@ app.include_router(user_routes.router)
 app.include_router(analytics_routes.router)
 app.include_router(assessment_routes.router)
 app.include_router(personal_inspiration_routes.router)
+app.include_router(notification_routes.router)
 
 
 @app.get("/", tags=["root"])
