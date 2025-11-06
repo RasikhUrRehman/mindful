@@ -41,6 +41,10 @@ venv.bak/
 htmlcov/
 *.log
 
-# Firebase credentials - NEVER commit this!
+# Firebase and credentials - NEVER commit these!
+cred/firebase-credentials.json
+cred/google-services.json
 google-services.json
 *firebase*.json
+!*firebase*.json.template
+!*firebase*.json.example

@@ -29,7 +29,27 @@ class Settings(BaseSettings):
     GOOGLE_PROJECT_ID: str = os.getenv("GOOGLE_PROJECT_ID", "mindful-475220")
     
     # Firebase Configuration
-    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "cred/firebase-credentials.json")
+    
+    # Firebase Service Account Credentials (for environment-based config)
+    FIREBASE_TYPE: Optional[str] = None
+    FIREBASE_PROJECT_ID: Optional[str] = None
+    FIREBASE_PRIVATE_KEY_ID: Optional[str] = None
+    FIREBASE_PRIVATE_KEY: Optional[str] = None
+    FIREBASE_CLIENT_EMAIL: Optional[str] = None
+    FIREBASE_CLIENT_ID: Optional[str] = None
+    FIREBASE_AUTH_URI: Optional[str] = None
+    FIREBASE_TOKEN_URI: Optional[str] = None
+    FIREBASE_AUTH_PROVIDER_X509_CERT_URL: Optional[str] = None
+    FIREBASE_CLIENT_X509_CERT_URL: Optional[str] = None
+    FIREBASE_UNIVERSE_DOMAIN: Optional[str] = None
+    
+    # Google Services Configuration (for environment-based config)
+    GOOGLE_SERVICES_PROJECT_NUMBER: Optional[str] = None
+    GOOGLE_SERVICES_STORAGE_BUCKET: Optional[str] = None
+    GOOGLE_SERVICES_MOBILESDK_APP_ID: Optional[str] = None
+    GOOGLE_SERVICES_ANDROID_PACKAGE_NAME: Optional[str] = None
+    GOOGLE_SERVICES_API_KEY: Optional[str] = None
     
     class Config:
         env_file = ".env"

@@ -15,19 +15,32 @@ class FCMService:
     
     @classmethod
     def initialize(cls):
-        """Initialize Firebase Admin SDK with service account credentials."""
+        """Initialize Firebase Admin SDK with service account credentials from environment variables."""
         if cls._initialized:
             return
         
         try:
-            # Look for Firebase credentials file
-            firebase_cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "firebase-credentials.json")
+            # Try to load credentials from environment variables first
+            firebase_project_id = os.getenv("FIREBASE_PROJECT_ID")
             
-            if not os.path.exists(firebase_cred_path):
-                logger.warning(f"Firebase credentials file not found at {firebase_cred_path}")
-                return
+            if firebase_project_id:
+                # Build credentials from environment variables
+                logger.info("Loading Firebase credentials from environment variables")
+                from app.utils.firebase_json_generator import generate_firebase_credentials_json
+                
+                cred_dict = generate_firebase_credentials_json()
+                cred = credentials.Certificate(cred_dict)
+            else:
+                # Fallback to loading from file
+                logger.info("Loading Firebase credentials from file")
+                firebase_cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH", "cred/firebase-credentials.json")
+                
+                if not os.path.exists(firebase_cred_path):
+                    logger.warning(f"Firebase credentials file not found at {firebase_cred_path}")
+                    return
+                
+                cred = credentials.Certificate(firebase_cred_path)
             
-            cred = credentials.Certificate(firebase_cred_path)
             initialize_app(cred)
             cls._initialized = True
             logger.info("Firebase Admin SDK initialized successfully")
@@ -80,8 +93,8 @@ class FCMService:
                     priority='high',
                     notification=messaging.AndroidNotification(
                         sound='default',
-                        notification_priority=messaging.Priority.HIGH,
-                        visibility=messaging.Visibility.PUBLIC,
+                        priority='high',
+                        visibility='public',
                     )
                 ),
                 apns=messaging.APNSConfig(
@@ -152,8 +165,8 @@ class FCMService:
                     priority='high',
                     notification=messaging.AndroidNotification(
                         sound='default',
-                        notification_priority=messaging.Priority.HIGH,
-                        visibility=messaging.Visibility.PUBLIC,
+                        priority='high',
+                        visibility='public',
                     )
                 ),
                 apns=messaging.APNSConfig(

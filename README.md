@@ -37,19 +37,35 @@ Update `.env` with your PostgreSQL connection:
 DATABASE_URL=postgresql://user:password@localhost:5432/mindful_db
 ```
 
-### 4. Run Migrations
+### 4. Configure Firebase (for Push Notifications)
+
+**Important**: Firebase credentials are now stored securely in environment variables.
+
+1. Copy your Firebase credentials to `.env`:
+   ```bash
+   # If you have existing JSON files, extract them:
+   python extract_firebase_to_env.py
+   
+   # Or manually add to .env (see .env.example)
+   ```
+
+2. The application will auto-generate JSON files from environment variables on startup.
+
+For detailed Firebase setup instructions, see [FIREBASE_ENV_SETUP.md](FIREBASE_ENV_SETUP.md).
+
+### 5. Run Migrations
 
 ```bash
 alembic upgrade head
 ```
 
-### 5. Start Server
+### 6. Start Server
 
 ```bash
 python -m uvicorn app.main:app --reload
 ```
 
-### 6. Access API
+### 7. Access API
 
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc

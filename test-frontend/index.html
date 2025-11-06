@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCM Test - Mindful App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .status.info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+        
+        .status.warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-left: 4px solid #f57c00;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .token-display {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .token-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px;
+            font-size: 14px;
+        }
+        
+        .test-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #f5f5f5;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            position: relative;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .modal-body p {
+            margin: 0;
+            color: #333;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .modal-footer {
+            padding: 20px 30px;
+            background: #f5f5f5;
+            text-align: right;
+        }
+        
+        .modal-close {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .notification-icon {
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 FCM Notification Test</h1>
+        <p class="subtitle">Mindful App - Push Notification Testing</p>
+        
+        <div id="status" class="status info">
+            Ready to initialize Firebase Cloud Messaging
+        </div>
+        
+        <button id="requestPermission" class="btn-primary">
+            Request Notification Permission
+        </button>
+        
+        <button id="getToken" class="btn-primary" disabled>
+            Get FCM Token
+        </button>
+        
+        <div id="tokenDisplay" style="display: none;">
+            <div class="token-label">Your FCM Token:</div>
+            <div class="token-display" id="tokenValue"></div>
+            <button id="copyToken" class="btn-secondary copy-btn">
+                📋 Copy Token
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3 style="color: #667eea; margin-bottom: 15px;">Send Test Notification</h3>
+            
+            <div class="input-group">
+                <label for="apiUrl">API URL:</label>
+                <input type="text" id="apiUrl" value="http://localhost:8000/notifications/test" placeholder="Backend API URL">
+            </div>
+            
+            <div class="input-group">
+                <label for="authToken">Auth Token (Optional):</label>
+                <input type="text" id="authToken" placeholder="Bearer token for authentication">
+            </div>
+            
+            <div class="input-group">
+                <label for="notifTitle">Title:</label>
+                <input type="text" id="notifTitle" value="Test Notification" placeholder="Notification Title">
+            </div>
+            
+            <div class="input-group">
+                <label for="notifBody">Message:</label>
+                <input type="text" id="notifBody" value="This is a test notification from Mindful App!" placeholder="Notification Message">
+            </div>
+            
+            <button id="sendTest" class="btn-primary" disabled>
+                Send Test Notification
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <span class="notification-icon">🔔</span>
+                    <span id="modalTitle">Notification Received</span>
+                </h2>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">You have received a new notification!</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-close" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC8EiT8cu9Y8D8hbUzZYo56o4kZv7KRD3k",
+            authDomain: "mindful-dfeab.firebaseapp.com",
+            projectId: "mindful-dfeab",
+            storageBucket: "mindful-dfeab.firebasestorage.app",
+            messagingSenderId: "271121060617",
+            appId: "1:271121060617:web:f94c8fff9d6954714d39d8",
+            measurementId: "G-N3SMDQ5JNM"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        let currentToken = null;
+
+        // DOM elements
+        const statusDiv = document.getElementById('status');
+        const requestPermissionBtn = document.getElementById('requestPermission');
+        const getTokenBtn = document.getElementById('getToken');
+        const tokenDisplay = document.getElementById('tokenDisplay');
+        const tokenValue = document.getElementById('tokenValue');
+        const copyTokenBtn = document.getElementById('copyToken');
+        const sendTestBtn = document.getElementById('sendTest');
+        const apiUrlInput = document.getElementById('apiUrl');
+        const authTokenInput = document.getElementById('authToken');
+        const notifTitleInput = document.getElementById('notifTitle');
+        const notifBodyInput = document.getElementById('notifBody');
+        const notificationModal = document.getElementById('notificationModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+
+        // Modal functions
+        function showModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            notificationModal.style.display = 'block';
+        }
+
+        window.closeModal = function() {
+            notificationModal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target === notificationModal) {
+                closeModal();
+            }
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Request notification permission
+        requestPermissionBtn.addEventListener('click', async () => {
+            try {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    updateStatus('✓ Notification permission granted!', 'success');
+                    getTokenBtn.disabled = false;
+                    requestPermissionBtn.disabled = true;
+                } else {
+                    updateStatus('✗ Notification permission denied', 'error');
+                }
+            } catch (error) {
+                updateStatus(`Error requesting permission: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Get FCM token
+        getTokenBtn.addEventListener('click', async () => {
+            try {
+                updateStatus('Getting FCM token...', 'info');
+                
+                // Note: You'll need to generate a VAPID key in Firebase Console
+                // Go to Project Settings > Cloud Messaging > Web Push certificates
+                const token = await getToken(messaging, {
+                    vapidKey: 'BJTHakIslzkVTqZsJhU-Z88qkp4WD9MhR7DtYcnh21X_ofsrcatES420n6FtSGt4R9Jr4RaxYBzKg78a4SB1p0E'
+                });
+                
+                if (token) {
+                    currentToken = token;
+                    tokenValue.textContent = token;
+                    tokenDisplay.style.display = 'block';
+                    sendTestBtn.disabled = false;
+                    updateStatus('✓ FCM token retrieved successfully!', 'success');
+                    console.log('FCM Token:', token);
+                } else {
+                    updateStatus('No registration token available. Request permission to generate one.', 'warning');
+                }
+            } catch (error) {
+                updateStatus(`Error getting token: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Copy token to clipboard
+        copyTokenBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(currentToken).then(() => {
+                const originalText = copyTokenBtn.textContent;
+                copyTokenBtn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    copyTokenBtn.textContent = originalText;
+                }, 2000);
+            });
+        });
+
+        // Send test notification
+        sendTestBtn.addEventListener('click', async () => {
+            if (!currentToken) {
+                updateStatus('Please get FCM token first', 'warning');
+                return;
+            }
+
+            try {
+                updateStatus('Sending test notification...', 'info');
+                
+                const headers = {
+                    'Content-Type': 'application/json',
+                };
+                
+                // Add Authorization header if token is provided
+                if (authTokenInput.value.trim()) {
+                    headers['Authorization'] = authTokenInput.value.trim().startsWith('Bearer ') 
+                        ? authTokenInput.value.trim() 
+                        : `Bearer ${authTokenInput.value.trim()}`;
+                }
+                
+                const response = await fetch(apiUrlInput.value, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({
+                        fcm_token: currentToken,
+                        title: notifTitleInput.value,
+                        message: notifBodyInput.value
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    updateStatus('✓ Test notification sent successfully!', 'success');
+                    console.log('Response:', result);
+                } else {
+                    const error = await response.text();
+                    updateStatus(`✗ Failed to send notification: ${error}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`✗ Error: ${error.message}`, 'error');
+                console.error('Error:', error);
+            }
+        });
+
+        // Handle foreground messages
+        onMessage(messaging, (payload) => {
+            console.log('Message received in foreground:', payload);
+            
+            const title = payload.notification?.title || 'New Notification';
+            const body = payload.notification?.body || 'You have received a new message';
+            
+            updateStatus(`📨 Received: ${title}`, 'success');
+            
+            // Show modal
+            showModal(title, body);
+            
+            // Also show browser notification
+            if (Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: '/firebase-logo.png'
+                });
+            }
+        });
+
+        // Check if permission is already granted
+        if (Notification.permission === 'granted') {
+            requestPermissionBtn.disabled = true;
+            getTokenBtn.disabled = false;
+            updateStatus('Notification permission already granted. Click "Get FCM Token"', 'success');
+        }
+    </script>
+</body>
+</html>

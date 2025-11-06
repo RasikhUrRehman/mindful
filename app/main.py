@@ -18,7 +18,9 @@ from app.routes import (
     notification_routes,
 )
 from app.services.reminder_scheduler_service import ReminderSchedulerService
+from app.utils.firebase_json_generator import generate_all_firebase_files
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +33,18 @@ async def lifespan(app: FastAPI):
     """Handle startup and shutdown events."""
     # Startup
     logger.info("Starting Mindful Progress API...")
+    
+    # Generate Firebase JSON files from environment variables
+    try:
+        if os.getenv("FIREBASE_PROJECT_ID"):
+            logger.info("Generating Firebase configuration files from environment variables...")
+            generate_all_firebase_files()
+            logger.info("Firebase configuration files generated successfully")
+        else:
+            logger.info("Firebase environment variables not found, using existing JSON files")
+    except Exception as e:
+        logger.warning(f"Failed to generate Firebase config files: {e}")
+    
     try:
         ReminderSchedulerService.start()
         logger.info("Reminder scheduler started successfully")
