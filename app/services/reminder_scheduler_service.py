@@ -64,19 +64,46 @@ class ReminderSchedulerService:
         try:
             now = datetime.utcnow()
             
-            # Query for pending reminders that are due
-            # We check for reminders within the next minute to avoid missing any
-            due_reminders = db.query(Reminder).join(User).filter(
+            # Query for pending reminders with active users that have FCM tokens
+            # We get all pending reminders and filter by timezone-adjusted time
+            pending_reminders = db.query(Reminder).join(User).filter(
                 Reminder.status == "pending",
                 Reminder.is_active == True,
-                Reminder.trigger_time <= now + timedelta(minutes=1),
-                Reminder.trigger_time > now - timedelta(minutes=2),  # Avoid duplicate sends
                 User.is_active == True,
                 User.fcm_token.isnot(None)
             ).all()
             
+            if not pending_reminders:
+                logger.debug("No pending reminders found")
+                return
+            
+            # Filter reminders that are due considering user's timezone
+            due_reminders = []
+            for reminder in pending_reminders:
+                user = reminder.user
+                
+                # The reminder.trigger_time is stored as user's local time
+                # We need to convert it to UTC for comparison with server time
+                # using the user's GMT offset
+                
+                if user.gmt_offset_minutes is not None:
+                    # Convert reminder trigger time from user's local time to UTC
+                    # If user is GMT+5 (offset = 300 minutes), and reminder is at 14:00 local
+                    # then UTC time should be 09:00 (14:00 - 5 hours)
+                    reminder_utc_time = reminder.trigger_time - timedelta(minutes=user.gmt_offset_minutes)
+                    
+                    # Check if reminder is due (within the next minute window)
+                    if reminder_utc_time <= now + timedelta(minutes=1) and reminder_utc_time > now - timedelta(minutes=2):
+                        due_reminders.append(reminder)
+                        logger.debug(f"Reminder {reminder.id} is due for user {user.id} (GMT offset: {user.gmt_offset_minutes} min)")
+                else:
+                    # No timezone info, assume trigger_time is already in UTC (backward compatibility)
+                    if reminder.trigger_time <= now + timedelta(minutes=1) and reminder.trigger_time > now - timedelta(minutes=2):
+                        due_reminders.append(reminder)
+                        logger.debug(f"Reminder {reminder.id} is due for user {user.id} (no timezone info, using UTC)")
+            
             if not due_reminders:
-                logger.debug("No due reminders found")
+                logger.debug("No due reminders found after timezone filtering")
                 return
             
             logger.info(f"Found {len(due_reminders)} due reminders to process")
@@ -155,6 +182,8 @@ class ReminderSchedulerService:
         
         current_trigger = reminder.trigger_time
         
+        # Calculate next trigger time based on frequency
+        # The trigger time is stored in the user's local time
         if reminder.frequency == "daily":
             next_trigger = current_trigger + timedelta(days=1)
         elif reminder.frequency == "weekly":
@@ -173,7 +202,7 @@ class ReminderSchedulerService:
         reminder.trigger_time = next_trigger
         reminder.status = "pending"
         
-        logger.info(f"Rescheduled reminder {reminder.id} to {next_trigger}")
+        logger.info(f"Rescheduled reminder {reminder.id} to {next_trigger} (user's local time)")
     
     @classmethod
     def is_running(cls) -> bool:

@@ -71,6 +71,7 @@ class ChangePasswordResponse(BaseModel):
 class FCMTokenUpdate(BaseModel):
     """Schema for updating FCM token."""
     fcm_token: str = Field(..., min_length=1)
+    device_timestamp: Optional[str] = None  # ISO format timestamp from device
 
 
 class FCMTokenResponse(BaseModel):

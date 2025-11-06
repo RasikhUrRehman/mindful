@@ -27,6 +27,7 @@ class User(Base):
     
     # FCM (Firebase Cloud Messaging) token for push notifications
     fcm_token = Column(Text, nullable=True)  # Device FCM token for push notifications
+    gmt_offset_minutes = Column(Integer, nullable=True)  # User's timezone offset from UTC in minutes
     
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

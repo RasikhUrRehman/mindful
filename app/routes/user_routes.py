@@ -123,6 +123,28 @@ def register_fcm_token(
     try:
         user = current_user
         user.fcm_token = token_data.fcm_token
+        
+        # Calculate GMT offset if device timestamp is provided
+        if token_data.device_timestamp:
+            try:
+                from datetime import datetime
+                # Parse device timestamp (ISO format)
+                device_time = datetime.fromisoformat(token_data.device_timestamp.replace('Z', '+00:00'))
+                server_time = datetime.utcnow()
+                
+                # Calculate offset in minutes
+                # device_time is the user's local time, server_time is UTC
+                # If device is ahead of UTC, offset is positive
+                time_diff = device_time.replace(tzinfo=None) - server_time
+                gmt_offset_minutes = int(time_diff.total_seconds() / 60)
+                
+                user.gmt_offset_minutes = gmt_offset_minutes
+                logger.info(f"Calculated GMT offset for user {user.id}: {gmt_offset_minutes} minutes")
+                
+            except Exception as e:
+                logger.warning(f"Failed to calculate GMT offset for user {user.id}: {e}")
+                # Continue without setting GMT offset
+        
         user.updated_at = datetime.utcnow()
         
         db.commit()
