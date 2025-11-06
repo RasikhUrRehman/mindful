@@ -138,3 +138,28 @@ def update_goal_progress(
     db.refresh(goal)
     
     return goal
+
+
+@router.patch("/{goal_id}/toggle-completed", response_model=GoalResponse)
+def toggle_goal_completed(
+    goal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Toggle the completed status of a goal."""
+    goal = db.query(Goal).filter(
+        Goal.id == goal_id,
+        Goal.user_id == current_user.id,
+    ).first()
+    
+    if not goal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Goal not found",
+        )
+    
+    goal.is_completed = not goal.is_completed
+    db.commit()
+    db.refresh(goal)
+    
+    return goal
